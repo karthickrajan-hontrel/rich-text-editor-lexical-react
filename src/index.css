@@ -46,6 +46,8 @@ header h1 {
 }
 
 .editor-shell {
+  height: 27.9cm;
+  width: 21cm;
   margin: 20px auto;
   border-radius: 2px;
   max-width: 1100px;
@@ -80,7 +82,7 @@ header h1 {
   outline: 0;
   z-index: 0;
   overflow: auto;
-  resize: vertical;
+  /* resize: vertical; */
 }
 
 .editor {

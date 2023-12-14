@@ -83,6 +83,7 @@ import PasteLogPlugin from "./plugins/PasteLogPlugin";
 import TestRecorderPlugin from "./plugins/TestRecorderPlugin";
 import TypingPerfPlugin from "./plugins/TypingPerfPlugin";
 import { isDevPlayground } from "./appSettings";
+import jsPDF from "jspdf";
 
 function FloatingActionPlugins() {
   const {
@@ -209,7 +210,7 @@ export default function Editor(): JSX.Element {
             <RichTextPlugin
               contentEditable={
                 <div ref={contentRef}>
-                  <div className="editor-scroller">
+                  <div className="editor-scroller" id="editor-scroller">
                     <div className="editor" ref={onRef}>
                       <ContentEditable />
                     </div>
@@ -222,13 +223,12 @@ export default function Editor(): JSX.Element {
 
             <div
               style={{
-                width: "100%",
                 display: "flex",
                 justifyContent: "center",
                 gap: 21,
                 boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
-                margin: 10,
                 padding: 5,
+                boxSizing: "border-box"
               }}
             >
               {/* {!editor._editable && */}
@@ -255,8 +255,23 @@ export default function Editor(): JSX.Element {
                       //   filename: "Note Simple.pdf",
                       // });
                       // exporter.getPdf(true);
+                      console.log("html.lastElementChild",  html, (html.children[1] as HTMLDivElement));
                       editor.setEditable(false);
+                      if (html.lastElementChild) {
+                        html.lastElementChild
+                      }
+                      (html.children[1] as HTMLDivElement).style.backgroundColor = "#ffffff";
+                      (html.children[1] as HTMLDivElement).style.height = "100%";
                       (document.getElementById("editor-root") as HTMLDivElement).contentEditable = "false";
+                      (document.getElementById("editor-scroller") as HTMLDivElement).style.resize = "none";
+                      (document.getElementById("editor-scroller") as HTMLDivElement).style.height = "inherit";
+                      // (document.getElementById("editor-root") as HTMLDivElement).style.height = "inherit";
+                      // const doc = new jsPDF("p", "pt", "letter");
+                      // doc.html(html, {
+                      //   callback: function (doc) {
+                      //     doc.save('sample.pdf');
+                      //   }
+                      // });
                       const a = document.createElement("a");
                       a.setAttribute(
                         "href",
@@ -288,7 +303,7 @@ export default function Editor(): JSX.Element {
                         "editorState",
                         JSON.stringify(editor.getEditorState())
                       );
-                      // window.location.reload();
+                      window.location.reload();
                     }}
                   >
                     Save
