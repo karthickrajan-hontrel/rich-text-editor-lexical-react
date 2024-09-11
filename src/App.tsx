@@ -136,12 +136,19 @@ function LocalStoragePlugin() {
   const [editor] = useLexicalComposerContext();
 
   React.useEffect(() => {
-    const state = editor.parseEditorState(
-      localStorage.getItem("editorState") || ""
-    );
-    editor.setEditorState(state);
-    if (state) {
-      editor.setEditable(false);
+    if (typeof editor === "object") {
+      const storage = localStorage.getItem("editorState") || "";
+
+      if (storage) {
+        const state = editor.parseEditorState(
+          localStorage.getItem("editorState") || ""
+        );
+        editor.setEditorState(state);
+        if (state) {
+          editor.setEditable(false);
+        }
+      }
+
     }
   }, [editor]);
 
@@ -153,7 +160,7 @@ function App(): JSX.Element {
     settings: { isCollab, emptyEditor },
   } = useSettings();
 
-  console.log("local", JSON.parse(localStorage.getItem("editorState") || ""));
+  // console.log("local", JSON.parse(localStorage.getItem("editorState") || ""));
 
   const initialConfig = {
     editorState: isCollab

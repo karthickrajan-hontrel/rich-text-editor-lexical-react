@@ -5,6 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
+
+import type {LexicalCommand} from 'lexical';
+
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {$insertNodeToNearestRoot, mergeRegister} from '@lexical/utils';
 import {
@@ -12,36 +15,37 @@ import {
   $isRangeSelection,
   COMMAND_PRIORITY_EDITOR,
   createCommand,
-  LexicalCommand,
 } from 'lexical';
 import {useEffect} from 'react';
 
-import {$createPageBreakNode, PageBreakNode} from '../../nodes/PageBreakNode';
+import { $createVariableNode, VariableNode } from '../../nodes/VariableNode';
 
-export const INSERT_PAGE_BREAK: LexicalCommand<undefined> = createCommand();
+export const INSERT_VARIABLE_COMMAND: LexicalCommand<string> =
+  createCommand<string>();
 
-export default function PageBreakPlugin(): JSX.Element | null {
+export function VariablesPlugin(): null {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
-    if (!editor.hasNodes([PageBreakNode]))
+    if (!editor.hasNodes([VariableNode]))
       throw new Error(
-        'PageBreakPlugin: PageBreakNode is not registered on editor',
+        'VariablesPlugin: VariableNode is not registered on editor',
       );
 
     return mergeRegister(
-      editor.registerCommand(
-        INSERT_PAGE_BREAK,
-        () => {
+        editor.registerCommand(
+        INSERT_VARIABLE_COMMAND,
+        (value) => {
           const selection = $getSelection();
 
           if (!$isRangeSelection(selection)) return false;
 
           const focusNode = selection.focus.getNode();
           if (focusNode !== null) {
-            const pgBreak = $createPageBreakNode();
-            console.log("valuevaluevaluevalue pgBreak", pgBreak)
-            $insertNodeToNearestRoot(pgBreak);
+            const variable = $createVariableNode(value);
+            console.log("valuevaluevaluevalue", value, variable)
+            $insertNodeToNearestRoot(variable);
+            variable.select();
           }
 
           return true;

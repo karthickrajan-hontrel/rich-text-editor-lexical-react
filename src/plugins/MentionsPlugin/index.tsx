@@ -493,12 +493,15 @@ const dummyMentionsData = [
 
 const dummyLookupService = {
   search(string: string, callback: (results: Array<string>) => void): void {
-    setTimeout(() => {
-      const results = dummyMentionsData.filter((mention) =>
+    fetch('https://dummyapi.online/api/users')
+    .then((response) => response.json())
+    .then((json) => {
+      const results = json.map((u: { username: string }) => u.username).filter((mention: string) =>
         mention.toLowerCase().includes(string.toLowerCase()),
       );
-      callback(results);
-    }, 500);
+      console.log(json)
+      callback(results)
+    })
   },
 };
 
@@ -635,6 +638,7 @@ export default function NewMentionsPlugin(): JSX.Element | null {
     ) => {
       editor.update(() => {
         const mentionNode = $createMentionNode(selectedOption.name);
+        console.log("valuevaluevaluevalue mentionNode", mentionNode)
         if (nodeToReplace) {
           nodeToReplace.replace(mentionNode);
         }

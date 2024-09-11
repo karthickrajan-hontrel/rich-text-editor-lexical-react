@@ -262,23 +262,23 @@ function getBaseOptions(editor: LexicalEditor, showModal: ShowModal) {
             editor.dispatchCommand(INSERT_EMBED_COMMAND, embedConfig.type),
         }),
     ),
-    new ComponentPickerOption('Equation', {
-      icon: <i className="icon equation" />,
-      keywords: ['equation', 'latex', 'math'],
-      onSelect: () =>
-        showModal('Insert Equation', (onClose) => (
-          <InsertEquationDialog activeEditor={editor} onClose={onClose} />
-        )),
-    }),
-    new ComponentPickerOption('GIF', {
-      icon: <i className="icon gif" />,
-      keywords: ['gif', 'animate', 'image', 'file'],
-      onSelect: () =>
-        editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
-          altText: 'Cat typing on a laptop',
-          src: catTypingGif,
-        }),
-    }),
+    // new ComponentPickerOption('Equation', {
+    //   icon: <i className="icon equation" />,
+    //   keywords: ['equation', 'latex', 'math'],
+    //   onSelect: () =>
+    //     showModal('Insert Equation', (onClose) => (
+    //       <InsertEquationDialog activeEditor={editor} onClose={onClose} />
+    //     )),
+    // }),
+    // new ComponentPickerOption('GIF', {
+    //   icon: <i className="icon gif" />,
+    //   keywords: ['gif', 'animate', 'image', 'file'],
+    //   onSelect: () =>
+    //     editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
+    //       altText: 'Cat typing on a laptop',
+    //       src: catTypingGif,
+    //     }),
+    // }),
     new ComponentPickerOption('Image', {
       icon: <i className="icon image" />,
       keywords: ['image', 'photo', 'picture', 'file'],
