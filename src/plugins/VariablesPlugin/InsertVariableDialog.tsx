@@ -5,6 +5,8 @@ import { INSERT_VARIABLE_COMMAND } from '.';
 import DropDown, { DropDownItem } from '../../ui/DropDown';
 import Button from '../../ui/Button';
 
+type Option = { label: string; value: string, placeholder: string };
+
 export default function InsertVariableDialog({
   activeEditor,
   onClose,
@@ -12,26 +14,31 @@ export default function InsertVariableDialog({
   activeEditor: LexicalEditor;
   onClose: () => void;
 }) {
-  const [options, setOptions] = useState<{ label: string; value: string }[]>([]);
-  const [variable, setVariable] = useState<string>('');
+  const [options, setOptions] = useState<Option[]>([]);
+  const [variable, setVariable] = useState<Option | null>(null);
 
   useEffect(() => {
-    // Fetch data from API
     fetch('https://dummyapi.online/api/products')
       .then((response) => response.json())
       .then((data) => {
-        const ops = data.map((item: { name: string; id: number }) => ({
+        const ops = data.map((item: { name: string; id: number; brand: string }) => ({
           label: item.name,
-          value: item.name.toLowerCase().replace(' ', ''),
+          value: item.name,
+          placeholder: item.brand
         }));
         setOptions(ops);
-        setVariable(ops[0]?.value || '');
+        if (ops.length > 0) {
+          setVariable(ops[0]);
+        }
       });
   }, []);
 
   const insertVariable = useCallback(() => {
     if (variable) {
-      activeEditor.dispatchCommand(INSERT_VARIABLE_COMMAND, variable);
+      activeEditor.dispatchCommand(INSERT_VARIABLE_COMMAND, {
+        value: `{{ ${variable.placeholder} }}`,
+        displayText: variable.label,
+      });
       onClose();
     }
   }, [activeEditor, variable, onClose]);
@@ -40,11 +47,11 @@ export default function InsertVariableDialog({
     <>
       <DropDown
         buttonClassName="toolbar-item dialog-dropdown"
-        buttonLabel={options.find((opt) => opt.value === variable)?.label || 'Select a variable'}
+        buttonLabel={options.find((opt) => opt.value === variable?.value)?.label || 'Select a variable'}
       >
-        {options.map(({ label, value }) => (
-          <DropDownItem  className="item" key={value} onClick={() => setVariable(value)}>
-            {label}
+        {options.map((op) => (
+          <DropDownItem className="item" key={op.value} onClick={() => setVariable(op)}>
+            {op.label}
           </DropDownItem>
         ))}
       </DropDown>
