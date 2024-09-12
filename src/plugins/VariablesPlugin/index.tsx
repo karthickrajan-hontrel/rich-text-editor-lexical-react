@@ -1,20 +1,21 @@
-// VariablesPlugin.tsx
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { useEffect } from 'react';
-import { createCommand, $getRoot, KEY_BACKSPACE_COMMAND, $getSelection, COMMAND_PRIORITY_HIGH, $isRangeSelection, $isNodeSelection } from 'lexical';
+import {
+  $getRoot,
+  COMMAND_PRIORITY_EDITOR,
+  createCommand,
+} from 'lexical';
 import { mergeRegister } from '@lexical/utils';
-import { $createVariableNode, $isVariableNode, VariableNode } from '../../nodes/VariableNode';
+import { $createVariableNode, VariableNode } from '../../nodes/VariableNode';
 
-export const INSERT_VARIABLE_COMMAND = createCommand<{ value: string; displayText: string }>(
-  'INSERT_VARIABLE_COMMAND'
-);
+export const INSERT_VARIABLE_COMMAND = createCommand<{ value: string; displayText: string }>();
 
 export default function VariablesPlugin() {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
     if (!editor.hasNodes([VariableNode])) {
-      throw new Error('VariableNode not registered in the editor');
+      throw new Error('VariablesPlugin: VariableNode not registered on editor');
     }
 
     return mergeRegister(
@@ -25,12 +26,12 @@ export default function VariablesPlugin() {
             const root = $getRoot();
             const variableNode = $createVariableNode(value, displayText);
             root.append(variableNode);
+            variableNode.selectEnd();
           });
           return true;
         },
-        0 // Use a priority value of 0 or COMMAND_PRIORITY_EDITOR
+        COMMAND_PRIORITY_EDITOR
       ),
-      VariableNode.registerCommandHandlers(editor),
     );
   }, [editor]);
 

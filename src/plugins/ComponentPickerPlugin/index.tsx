@@ -240,37 +240,37 @@ function getBaseOptions(editor: LexicalEditor, showModal: ShowModal) {
       keywords: ['page break', 'divider'],
       onSelect: () => editor.dispatchCommand(INSERT_PAGE_BREAK, undefined),
     }),
-    new ComponentPickerOption('Excalidraw', {
-      icon: <i className="icon diagram-2" />,
-      keywords: ['excalidraw', 'diagram', 'drawing'],
-      onSelect: () =>
-        editor.dispatchCommand(INSERT_EXCALIDRAW_COMMAND, undefined),
-    }),
-    new ComponentPickerOption('Poll', {
-      icon: <i className="icon poll" />,
-      keywords: ['poll', 'vote'],
-      onSelect: () =>
-        showModal('Insert Poll', (onClose) => (
-          <InsertPollDialog activeEditor={editor} onClose={onClose} />
-        )),
-    }),
-    new ComponentPickerOption('Variables', {
+    // new ComponentPickerOption('Excalidraw', {
+    //   icon: <i className="icon diagram-2" />,
+    //   keywords: ['excalidraw', 'diagram', 'drawing'],
+    //   onSelect: () =>
+    //     editor.dispatchCommand(INSERT_EXCALIDRAW_COMMAND, undefined),
+    // }),
+    // new ComponentPickerOption('Poll', {
+    //   icon: <i className="icon poll" />,
+    //   keywords: ['poll', 'vote'],
+    //   onSelect: () =>
+    //     showModal('Insert Poll', (onClose) => (
+    //       <InsertPollDialog activeEditor={editor} onClose={onClose} />
+    //     )),
+    // }),
+    new ComponentPickerOption('Insert Variables', {
       icon: <i className="icon columns" />,
       keywords: ['variable'],
       onSelect: () =>
-        showModal('Insert Variables', (onClose) => (
+        showModal('Insert Variables Layout', (onClose) => (
           <InsertVariableDialog activeEditor={editor} onClose={onClose} />
         )),
     }),
-    ...EmbedConfigs.map(
-      (embedConfig) =>
-        new ComponentPickerOption(`Embed ${embedConfig.contentName}`, {
-          icon: embedConfig.icon,
-          keywords: [...embedConfig.keywords, 'embed'],
-          onSelect: () =>
-            editor.dispatchCommand(INSERT_EMBED_COMMAND, embedConfig.type),
-        }),
-    ),
+    // ...EmbedConfigs.map(
+    //   (embedConfig) =>
+    //     new ComponentPickerOption(`Embed ${embedConfig.contentName}`, {
+    //       icon: embedConfig.icon,
+    //       keywords: [...embedConfig.keywords, 'embed'],
+    //       onSelect: () =>
+    //         editor.dispatchCommand(INSERT_EMBED_COMMAND, embedConfig.type),
+    //     }),
+    // ),
     // new ComponentPickerOption('Equation', {
     //   icon: <i className="icon equation" />,
     //   keywords: ['equation', 'latex', 'math'],
@@ -296,12 +296,12 @@ function getBaseOptions(editor: LexicalEditor, showModal: ShowModal) {
           <InsertImageDialog activeEditor={editor} onClose={onClose} />
         )),
     }),
-    new ComponentPickerOption('Collapsible', {
-      icon: <i className="icon caret-right" />,
-      keywords: ['collapse', 'collapsible', 'toggle'],
-      onSelect: () =>
-        editor.dispatchCommand(INSERT_COLLAPSIBLE_COMMAND, undefined),
-    }),
+    // new ComponentPickerOption('Collapsible', {
+    //   icon: <i className="icon caret-right" />,
+    //   keywords: ['collapse', 'collapsible', 'toggle'],
+    //   onSelect: () =>
+    //     editor.dispatchCommand(INSERT_COLLAPSIBLE_COMMAND, undefined),
+    // }),
     new ComponentPickerOption('Columns Layout', {
       icon: <i className="icon columns" />,
       keywords: ['columns', 'layout', 'grid'],

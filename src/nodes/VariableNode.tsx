@@ -1,18 +1,24 @@
 // VariableNode.ts
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { useLexicalNodeSelection } from '@lexical/react/useLexicalNodeSelection';
+import { mergeRegister } from '@lexical/utils';
 import {
   type DOMConversionMap,
   type DOMExportOutput,
   type EditorConfig,
-  ElementNode,
   LexicalNode,
   DOMConversionOutput,
-  LexicalEditor,
   KEY_BACKSPACE_COMMAND,
   $getSelection,
-  $isRangeSelection,
-  COMMAND_PRIORITY_HIGH,
   COMMAND_PRIORITY_LOW,
+  KEY_DELETE_COMMAND,
+  $isNodeSelection,
+  NodeKey,
+  $getNodeByKey,
+  CLICK_COMMAND,
+  DecoratorNode,
 } from 'lexical';
+import { useCallback, useEffect } from 'react';
 
 export type SerializedVariableNode = {
   variableName: string;
@@ -37,9 +43,72 @@ function convertVariableElement(
   return null;
 }
 
+function VariableComponent({nodeKey}: {nodeKey: NodeKey}) {
+  const [editor] = useLexicalComposerContext();
+  const [isSelected, setSelected, clearSelection] =
+    useLexicalNodeSelection(nodeKey);
+
+  const onDelete = useCallback(
+    (event: KeyboardEvent) => {
+      event.preventDefault();
+      if (isSelected && $isNodeSelection($getSelection())) {
+        const node = $getNodeByKey(nodeKey);
+        if ($isVariableNode(node)) {
+          node.remove();
+          return true;
+        }
+      }
+      return false;
+    },
+    [isSelected, nodeKey],
+  );
+
+  useEffect(() => {
+    return mergeRegister(
+      editor.registerCommand(
+        CLICK_COMMAND,
+        (event: MouseEvent) => {
+          const pbElem = editor.getElementByKey(nodeKey);
+
+          if (event.target === pbElem) {
+            if (!event.shiftKey) {
+              clearSelection();
+            }
+            setSelected(!isSelected);
+            return true;
+          }
+
+          return false;
+        },
+        COMMAND_PRIORITY_LOW,
+      ),
+      editor.registerCommand(
+        KEY_DELETE_COMMAND,
+        onDelete,
+        COMMAND_PRIORITY_LOW,
+      ),
+      editor.registerCommand(
+        KEY_BACKSPACE_COMMAND,
+        onDelete,
+        COMMAND_PRIORITY_LOW,
+      ),
+    );
+  }, [clearSelection, editor, isSelected, nodeKey, onDelete, setSelected]);
+
+  useEffect(() => {
+    const pbElem = editor.getElementByKey(nodeKey);
+    if (pbElem !== null) {
+      pbElem.className = isSelected ? 'selected' : '';
+    }
+  }, [editor, isSelected, nodeKey]);
+
+  return null;
+}
+
+
 // const variableStyle = 'background-color: rgba(103, 58, 183, 0.2)';
 
-export class VariableNode extends ElementNode {
+export class VariableNode extends DecoratorNode<JSX.Element> {
   __variableName: string;
   __displayText: string;
 
@@ -57,42 +126,20 @@ export class VariableNode extends ElementNode {
     this.__displayText = displayText;
   }
 
-  // Deletion handling logic
-  static registerCommandHandlers(editor: LexicalEditor) {
-    return editor.registerCommand(
-      KEY_BACKSPACE_COMMAND,
-      (event: KeyboardEvent) => {
-        event.preventDefault();
-        const selection = $getSelection();
-        if ($isRangeSelection(selection) && selection.isCollapsed()) {
-          const node = selection.anchor.getNode();
-          console.log("nodenodenode", node)
-          if ($isVariableNode(node)) {
-            editor.update(() => {
-              node.remove();
-            });
-            return true;
-          }
-        }
-        return false;
-      },
-      COMMAND_PRIORITY_LOW
-    );
-  }
-
   static importJSON(serializedNode: SerializedVariableNode): VariableNode {
     const { variableName, displayText } = serializedNode;
     return new VariableNode(variableName, displayText);
   }
 
-  // exportJSON(): SerializedVariableNode {
-  //   return {
-  //     variableName: this.__variableName,
-  //     displayText: this.__displayText,
-  //     type: VariableNode.getType(),
-  //     version: 1,
-  //   };
-  // }
+  exportJSON(): SerializedVariableNode {
+    return {
+      variableName: this.__variableName,
+      displayText: this.__displayText,
+      type: VariableNode.getType(),
+      version: 1,
+    };
+  }
+  
 
   createDOM(_config: EditorConfig): HTMLElement {
     const dom = document.createElement('span');
@@ -108,8 +155,10 @@ export class VariableNode extends ElementNode {
 
     // Append to the main span
     dom.appendChild(italicElement);
-    dom.appendChild(document.createElement('br')); // Add a space
+    dom.appendChild(document.createElement('br')); // Add break
     dom.appendChild(boldElement);
+    dom.appendChild(document.createElement('br')); // Add break
+    dom.appendChild(document.createTextNode(' ')); // Add Space
 
     return dom;
   }
@@ -127,6 +176,8 @@ export class VariableNode extends ElementNode {
     element.appendChild(italicElement);
     element.appendChild(document.createElement('br'));
     element.appendChild(boldElement);
+    element.appendChild(document.createElement('br')); // Add break
+    element.appendChild(document.createTextNode(' ')); // Add Space
 
     return { element };
   }
@@ -150,6 +201,10 @@ export class VariableNode extends ElementNode {
         return null;
       },
     };
+  }
+
+  decorate(): JSX.Element {
+    return <VariableComponent nodeKey={this.__key} />;
   }
 }
 
