@@ -1,17 +1,9 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-import {LexicalEditor} from 'lexical';
-import * as React from 'react';
-import {useState} from 'react';
-
-import Button from '../../ui/Button';
-import DropDown, {DropDownItem} from '../../ui/DropDown';
+// InsertVariableDialog.tsx
+import { useState, useEffect, useCallback } from 'react';
+import { LexicalEditor } from 'lexical';
 import { INSERT_VARIABLE_COMMAND } from '.';
+import DropDown, { DropDownItem } from '../../ui/DropDown';
+import Button from '../../ui/Button';
 
 export default function InsertVariableDialog({
   activeEditor,
@@ -19,43 +11,46 @@ export default function InsertVariableDialog({
 }: {
   activeEditor: LexicalEditor;
   onClose: () => void;
-}): JSX.Element {
+}) {
   const [options, setOptions] = useState<{ label: string; value: string }[]>([]);
   const [variable, setVariable] = useState<string>('');
-  const buttonLabel = options.find((item) => item.value === variable)?.label;
 
-  const onClick = () => {
-    activeEditor.dispatchCommand(INSERT_VARIABLE_COMMAND, variable);
-    onClose();
-  };
-
-  React.useEffect(() => {
+  useEffect(() => {
+    // Fetch data from API
     fetch('https://dummyapi.online/api/products')
-    .then((response) => response.json())
-    .then((json) => {
-        const ops = json.map(((j: { name: string; id: number }) => ({ ...j, label: j.name, value: j.name.toLowerCase().replaceAll(" ", "") })));
+      .then((response) => response.json())
+      .then((data) => {
+        const ops = data.map((item: { name: string; id: number }) => ({
+          label: item.name,
+          value: item.name.toLowerCase().replace(' ', ''),
+        }));
         setOptions(ops);
-        if (ops.length > 0) {
-            setVariable(ops[0].value);
-        }
-    })
-  }, [])
+        setVariable(ops[0]?.value || '');
+      });
+  }, []);
+
+  const insertVariable = useCallback(() => {
+    if (variable) {
+      activeEditor.dispatchCommand(INSERT_VARIABLE_COMMAND, variable);
+      onClose();
+    }
+  }, [activeEditor, variable, onClose]);
 
   return (
     <>
       <DropDown
         buttonClassName="toolbar-item dialog-dropdown"
-        buttonLabel={buttonLabel}>
-        {options.map(({label, value}) => (
-          <DropDownItem
-            key={value}
-            className="item"
-            onClick={() => setVariable(value)}>
-            <span className="text">{label}</span>
+        buttonLabel={options.find((opt) => opt.value === variable)?.label || 'Select a variable'}
+      >
+        {options.map(({ label, value }) => (
+          <DropDownItem  className="item" key={value} onClick={() => setVariable(value)}>
+            {label}
           </DropDownItem>
         ))}
       </DropDown>
-      <Button onClick={onClick}>Insert</Button>
+      <Button onClick={insertVariable} disabled={!variable}>
+        Insert Variable
+      </Button>
     </>
   );
 }

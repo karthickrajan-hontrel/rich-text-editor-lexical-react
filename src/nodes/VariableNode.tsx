@@ -1,103 +1,19 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-import { useLexicalNodeSelection } from '@lexical/react/useLexicalNodeSelection';
-import { mergeRegister } from '@lexical/utils';
-import type {Spread} from 'lexical';
-
+// VariableNode.ts
 import {
   type DOMConversionMap,
-  type DOMConversionOutput,
   type DOMExportOutput,
   type EditorConfig,
-  type LexicalNode,
-  type NodeKey,
-  type SerializedTextNode,
-  $applyNodeReplacement,
-  TextNode,
-  CLICK_COMMAND,
-  COMMAND_PRIORITY_LOW,
-  KEY_DELETE_COMMAND,
-  KEY_BACKSPACE_COMMAND,
-  $getNodeByKey,
-  $isNodeSelection,
-  $getSelection,
+  ElementNode,
+  LexicalNode,
+  DOMConversionOutput,
 } from 'lexical';
-import { useCallback, useEffect } from 'react';
 
-export type SerializedVariableNode = Spread<
-  {
-    variableName: string;
-  },
-  SerializedTextNode
->;
+export type SerializedVariableNode = {
+  variableName: string;
+  type: string;
+  version: number;
+};
 
-function VariableComponent({nodeKey}: {nodeKey: NodeKey}) {
-  const [editor] = useLexicalComposerContext();
-  const [isSelected, setSelected, clearSelection] =
-    useLexicalNodeSelection(nodeKey);
-
-  const onDelete = useCallback(
-    (event: KeyboardEvent) => {
-      event.preventDefault();
-      if (isSelected && $isNodeSelection($getSelection())) {
-        const node = $getNodeByKey(nodeKey);
-        if ($isVariableNode(node)) {
-          node.remove();
-          return true;
-        }
-      }
-      return false;
-    },
-    [isSelected, nodeKey],
-  );
-
-  useEffect(() => {
-    return mergeRegister(
-      editor.registerCommand(
-        CLICK_COMMAND,
-        (event: MouseEvent) => {
-          const pbElem = editor.getElementByKey(nodeKey);
-
-          if (event.target === pbElem) {
-            if (!event.shiftKey) {
-              clearSelection();
-            }
-            setSelected(!isSelected);
-            return true;
-          }
-
-          return false;
-        },
-        COMMAND_PRIORITY_LOW,
-      ),
-      editor.registerCommand(
-        KEY_DELETE_COMMAND,
-        onDelete,
-        COMMAND_PRIORITY_LOW,
-      ),
-      editor.registerCommand(
-        KEY_BACKSPACE_COMMAND,
-        onDelete,
-        COMMAND_PRIORITY_LOW,
-      ),
-    );
-  }, [clearSelection, editor, isSelected, nodeKey, onDelete, setSelected]);
-
-  useEffect(() => {
-    const pbElem = editor.getElementByKey(nodeKey);
-    if (pbElem !== null) {
-      pbElem.className = isSelected ? 'selected' : '';
-    }
-  }, [editor, isSelected, nodeKey]);
-
-  return null;
-}
 
 function convertVariableElement(
   domNode: HTMLElement,
@@ -115,58 +31,64 @@ function convertVariableElement(
 }
 
 const variableStyle = 'background-color: rgba(103, 58, 183, 0.2)';
-export class VariableNode extends TextNode {
-  __variable: string;
+
+export class VariableNode extends ElementNode {
+  __variableName: string;
 
   static getType(): string {
     return 'variable';
   }
 
   static clone(node: VariableNode): VariableNode {
-    return new VariableNode(node.__variable, node.__text, node.__key);
+    return new VariableNode(node.__variableName, node.__key);
   }
+
+  constructor(variableName: string, key?: string) {
+    super(key);
+    this.__variableName = variableName;
+  }
+
+  // Importing a node from JSON
   static importJSON(serializedNode: SerializedVariableNode): VariableNode {
-    const node = $createVariableNode(serializedNode.variableName);
-    node.setTextContent(serializedNode.text);
-    node.setFormat(serializedNode.format);
-    node.setDetail(serializedNode.detail);
-    node.setMode(serializedNode.mode);
-    node.setStyle(serializedNode.style);
-    return node;
+    const { variableName } = serializedNode;
+    return new VariableNode(variableName);
   }
 
-  constructor(variableName: string, text?: string, key?: NodeKey) {
-    super(text ?? variableName, key);
-    this.__variable = variableName;
-  }
+  // Exporting a node to JSON
+  // exportJSON(): SerializedVariableNode {
+  //   return {
+  //     variableName: this.__variableName,
+  //     type: VariableNode.getType(),
+  //     version: 1,
+  //   };
+  // }
 
-  exportJSON(): SerializedVariableNode {
-    return {
-      ...super.exportJSON(),
-      variableName: this.__variable,
-      type: 'variable',
-      version: 1,
-    };
-  }
-
-  createDOM(config: EditorConfig): HTMLElement {
-    const dom = super.createDOM(config);
+  // Create the DOM element for this node
+  createDOM(_config: EditorConfig): HTMLElement {
+    const dom = document.createElement('span');
     dom.style.cssText = variableStyle;
-    dom.className = 'variable';
+    dom.textContent = this.__variableName;
     return dom;
   }
 
+  // Export the DOM element to HTML
   exportDOM(): DOMExportOutput {
     const element = document.createElement('span');
-    element.setAttribute('data-lexical-variable', 'true');
-    element.textContent = this.__text;
-    return {element};
+    element.style.cssText = variableStyle;
+    element.textContent = this.__variableName;
+    return { element };
   }
 
+  // Define how this node should be updated in the DOM
+  updateDOM(prevNode: VariableNode): boolean {
+    return prevNode.__variableName !== this.__variableName;
+  }
+
+  // Conversion from DOM to Lexical node
   static importDOM(): DOMConversionMap | null {
     return {
       span: (domNode: HTMLElement) => {
-        if (!domNode.hasAttribute('data-lexical-variable')) {
+        if (!domNode.hasAttribute('data-lexical-mention')) {
           return null;
         }
         return {
@@ -176,36 +98,14 @@ export class VariableNode extends TextNode {
       },
     };
   }
-
-  isTextEntity(): true {
-    return true;
-  }
-
-  canInsertTextBefore(): boolean {
-    return false;
-  }
-
-  canInsertTextAfter(): boolean {
-    return false;
-  }
-
-  decorate(): JSX.Element {
-    return <VariableComponent nodeKey={this.__key} />;
-  }
 }
 
+// Helper function to create a VariableNode
 export function $createVariableNode(variableName: string): VariableNode {
-  const variableNode = new VariableNode(variableName);
-  variableNode.setMode('segmented').toggleDirectionless();
-  return $applyNodeReplacement(variableNode);
+  return new VariableNode(variableName);
 }
 
-export function $isVariableNode(
-  node: LexicalNode | null | undefined,
-): node is VariableNode {
+// Helper function to check if a node is a VariableNode
+export function $isVariableNode(node: LexicalNode | null | undefined): node is VariableNode {
   return node instanceof VariableNode;
 }
-function useLexicalComposerContext(): [any] {
-  throw new Error('Function not implemented.');
-}
-

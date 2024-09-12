@@ -46,6 +46,7 @@ import InsertLayoutDialog from '../LayoutPlugin/InsertLayoutDialog';
 import {INSERT_PAGE_BREAK} from '../PageBreakPlugin';
 import {InsertPollDialog} from '../PollPlugin';
 import {InsertTableDialog} from '../TablePlugin';
+import InsertVariableDialog from '../VariablesPlugin/InsertVariableDialog';
 
 class ComponentPickerOption extends MenuOption {
   // What shows up in the editor
@@ -251,6 +252,14 @@ function getBaseOptions(editor: LexicalEditor, showModal: ShowModal) {
       onSelect: () =>
         showModal('Insert Poll', (onClose) => (
           <InsertPollDialog activeEditor={editor} onClose={onClose} />
+        )),
+    }),
+    new ComponentPickerOption('Variables', {
+      icon: <i className="icon columns" />,
+      keywords: ['variable'],
+      onSelect: () =>
+        showModal('Insert Variables', (onClose) => (
+          <InsertVariableDialog activeEditor={editor} onClose={onClose} />
         )),
     }),
     ...EmbedConfigs.map(

@@ -67,7 +67,7 @@ import TableOfContentsPlugin from "./plugins/TableOfContentsPlugin";
 import ToolbarPlugin from "./plugins/ToolbarPlugin";
 import TreeViewPlugin from "./plugins/TreeViewPlugin";
 import TwitterPlugin from "./plugins/TwitterPlugin";
-import {VariablesPlugin} from "./plugins/VariablesPlugin";
+import VariablesPlugin from "./plugins/VariablesPlugin";
 import YouTubePlugin from "./plugins/YouTubePlugin";
 import ContentEditable from "./ui/ContentEditable";
 import Placeholder from "./ui/Placeholder";

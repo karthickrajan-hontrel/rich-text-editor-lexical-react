@@ -1163,7 +1163,7 @@ export default function ToolbarPlugin({
               <span className="text">Insert Variables</span>
             </DropDownItem>
 
-            {/* <DropDownItem
+            <DropDownItem
               onClick={() => {
                 showModal('Insert Equation', (onClose) => (
                   <InsertEquationDialog
@@ -1175,7 +1175,7 @@ export default function ToolbarPlugin({
               className="item">
               <i className="icon equation" />
               <span className="text">Equation</span>
-            </DropDownItem> */}
+            </DropDownItem>
             {/* <DropDownItem
               onClick={() => {
                 editor.update(() => {
