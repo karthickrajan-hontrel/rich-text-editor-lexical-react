@@ -35,10 +35,7 @@ export default function InsertVariableDialog({
 
   const insertVariable = useCallback(() => {
     if (variable) {
-      activeEditor.dispatchCommand(INSERT_VARIABLE_COMMAND, {
-        value: `{{ ${variable.placeholder} }}`,
-        displayText: variable.label,
-      });
+      activeEditor.dispatchCommand(INSERT_VARIABLE_COMMAND, `{{ ${variable.placeholder} }}`);
       onClose();
     }
   }, [activeEditor, variable, onClose]);
